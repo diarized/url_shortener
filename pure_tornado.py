@@ -33,7 +33,8 @@ class MainHandler(tornado.web.RequestHandler):
         print post_data
         id = short_id(5)
         tcache.put(id, post_data)
-        shortened_url = "http://localhost:8888/{0}".format(id)
+        #shortened_url = "http://localhost:8888/{0}".format(id)
+        shortened_url = "/{0}".format(id)
         self.render('shurl.html', page_title='Shorted URL', short_url=shortened_url)
 
 
