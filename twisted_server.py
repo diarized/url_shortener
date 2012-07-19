@@ -10,6 +10,7 @@ from random import sample
 from string import digits, ascii_letters
 import cgi
 import cache
+import time
 
 def short_id(num):
     return "".join(sample(digits + ascii_letters, num))
@@ -25,7 +26,9 @@ class UrlShortener(Resource):  # Resources are what Site knows how to deal with
 
     def render_GET(self, request):
         if request.path == '/':
-            print request.__class__
+            #request.__class__ = twisted.web.server.Request
+            cache.tcache.put(request.getClientIP, time.time())
+            log.msg("Client IP: {0}".format(request.getClientIP()))
             return index_template
         else:
             short_url = request.path.lstrip('/')
