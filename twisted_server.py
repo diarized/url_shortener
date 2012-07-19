@@ -34,24 +34,28 @@ class UrlShortener(Resource):  # Resources are what Site knows how to deal with
             return redirectTo(str(cache.tcache.get_value(url_id)), request)
 
     def render_POST(self, request):  # Define a handler for POST requests
-        client_ip = request.getClientIP()
-        try:
-            last_time = float(cache.tabuse.get_value(client_ip))
-        except:
-            last_time = time.time() - ABUSE_INTERVAL
-            raise
-        delta = time.time() - last_time
-        log.msg('delta = {0}'.format(delta))
-        if delta < ABUSE_INTERVAL:
-            log.msg('Abuser from IP {0} connected at {1}.'.format(client_ip, last_time))
+        if self.is_abuser(request):
             return index_template
         full_url = cgi.escape(request.args["full_url"][0])
         url_id = short_id(5)
-        log.msg("URL {0} ===> {1}".format(full_url, url_id))
         cache.tcache.put(url_id, full_url)
-        cache.tabuse.put(client_ip, float(time.time()))
-        log.msg('Not abuser from IP {0}'.format(client_ip))
         return shurl_template.format(url_id)
+
+    def is_abuser(self, rq):
+        client_ip = rq.getClientIP()
+        try:
+            last_time = float(cache.tabuse.get_value(client_ip))
+        except:
+            cache.tabuse.put(client_ip, float(time.time()))
+            return False
+        cache.tabuse.put(client_ip, float(time.time()))
+        delta = time.time() - last_time
+        if delta < ABUSE_INTERVAL:
+            log.msg('Abuser from IP {0}'.format(client_ip, last_time))
+            return True
+        return False
+
+
 
 log.startLogging(sys.stdout)
 reactor.listenTCP(8888, Site(UrlShortener()))
