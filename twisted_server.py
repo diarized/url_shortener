@@ -27,14 +27,15 @@ class UrlShortener(Resource):  # Resources are what Site knows how to deal with
     def render_GET(self, request):
         if request.path == '/':
             #request.__class__ = twisted.web.server.Request
-            cache.tcache.put(request.getClientIP, time.time())
-            log.msg("Client IP: {0}".format(request.getClientIP()))
             return index_template
         else:
             short_url = request.path.lstrip('/')
             return redirectTo(str(cache.tcache.get_value(short_url)), request)
 
     def render_POST(self, request):  # Define a handler for POST requests
+        if cache.tabuse.get_value(request.getClientIP()):
+            return index_template
+        cache.tabuse.put(request.getClientIP, time.time())
         full_url = cgi.escape(request.args["full_url"][0])
         url_id = short_id(5)
         log.msg("URL {0} ===> {1}".format(full_url, url_id))
