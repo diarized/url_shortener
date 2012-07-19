@@ -29,7 +29,7 @@ class MainHandler(tornado.web.RequestHandler):
         """
         Responses to POST request, stores new short URL
         """
-        post_data = self.get_argument('new_url', 'No URL to short')
+        post_data = self.get_argument('full_url', 'No URL to short')
         print post_data
         id = short_id(NAMESPACE)
         tcache.put(id, post_data)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-from twisted.web.server import Site  # Site is a server factory for HTTP
+from twisted.web.server import Site
 from twisted.web.resource import Resource
 from twisted.internet import reactor
 from twisted.web.util import redirectTo
@@ -14,13 +14,19 @@ import cache
 def short_id(num):
     return "".join(sample(digits + ascii_letters, num))
 
+with open('templates/index.html') as fh:
+    index_template = fh.read()
+
+with open('templates/shurl_twisted.html') as fh:
+    shurl_template = fh.read()
 
 class UrlShortener(Resource):  # Resources are what Site knows how to deal with
     isLeaf = True  # Disable child lookup
 
     def render_GET(self, request):
         if request.path == '/':
-            return '<html><body><form action="/" method="POST"><input name="full_url" type="text" /><input type="submit" name="submit" value="Submit" /></form></body></html>'
+            print request.__class__
+            return index_template
         else:
             short_url = request.path.lstrip('/')
             return redirectTo(str(cache.tcache.get_value(short_url)), request)
@@ -30,7 +36,7 @@ class UrlShortener(Resource):  # Resources are what Site knows how to deal with
         url_id = short_id(5)
         log.msg("URL {0} ===> {1}".format(full_url, url_id))
         cache.tcache.put(url_id, full_url)
-        return '<html><body><a href="/{0}">{0}</a><br /><a href="/">Home page</a></html></body>'.format(url_id)
+        return shurl_template.format(url_id)
 
 log.startLogging(sys.stdout)
 reactor.listenTCP(8888, Site(UrlShortener()))
