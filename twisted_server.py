@@ -34,8 +34,8 @@ class UrlShortener(Resource):  # Resources are what Site knows how to deal with
             return redirectTo(str(cache.tcache.get_value(url_id)), request)
 
     def render_POST(self, request):  # Define a handler for POST requests
-        #if self.is_abuser(request):
-        #    return index_template
+        if self.is_abuser(request):
+            return index_template
         full_url = cgi.escape(request.args["full_url"][0])
         url_id = short_id(5)
         cache.tcache.put(url_id, full_url)
