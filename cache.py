@@ -27,8 +27,6 @@ class DbmDb(object):
 
     def get(self, key):
         value = self.cache.get(key)
-        if value:
-            return value
-        else:
-            return self.tdb.get_value(key)
-
+        if not value:
+            value = self.tdb.get_value(key)
+        return value
