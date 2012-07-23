@@ -4,7 +4,7 @@ import threading
 import requests
 import time
 
-REQUESTS = 1000
+REQUESTS = 100
 THREADS = 10
 
 class FetchUrl(threading.Thread):
