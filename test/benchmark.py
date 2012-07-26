@@ -4,8 +4,8 @@ import threading
 import requests
 import time
 
-REQUESTS = 100
-THREADS = 10
+REQUESTS = 4
+THREADS = 2
 
 class FetchUrl(threading.Thread):
     """ Thread class for requests requests """

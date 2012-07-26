@@ -46,17 +46,21 @@ class UrlShortener(Resource):  # Resources are what Site knows how to deal with
         return shurl_template.format(url_id)
 
     def is_abuser(self, rq):
+        current_time = float(time.time())
         client_ip = rq.getClientIP()
-        try:
-            last_time = float(self.abuser_db.get(client_ip))
-        except:
-            self.abuser_db.put(client_ip, float(time.time()))
+        was_there = self.abuser_db.get(client_ip)
+        if not was_there:
+            #log.msg("IP {0} NOT found in cache.".format(client_ip))
+            self.abuser_db.put(client_ip, current_time)
             return False
-        self.abuser_db.put(client_ip, float(time.time()))
-        delta = time.time() - last_time
+        #log.msg("IP {0} found in cache.".format(client_ip))
+        last_time = float(was_there)
+        delta = current_time - last_time
         if delta < ABUSE_INTERVAL:
-            log.msg('Abuser from IP {0}'.format(client_ip))
+            #log.msg('Abuser from IP {0}'.format(client_ip))
             return True
+        #log.msg('IP {0} was here, but long ago.'.format(client_ip))
+        self.abuser_db.put(client_ip, current_time)
         return False
 
 
