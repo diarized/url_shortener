@@ -19,22 +19,42 @@ class DbmDb(object):
         self._cache = {}
 
     def put(self, key, value):
+        self._put2cache(key, value)
+        self._put2disk(key, value)
+
+    def _put2cache(self, key, value):
         if not self._cache.has_key(key):
             if DEBUG:
-                print('IP not in cache. Adding')
+                print('Key {0} not in cache. Adding with value {1}'.format(key, value))
             self._cache[key] = value
-        if DEBUG:
-            print('IP already in cache. Needs an update.')
-        self._update_cache(key, value)
-        self.tdb.put(key, value)
+            return
+        if not self._cache[key] == value:
+            if DEBUG:
+                print('Key {0} already in cache with value {1}. Needs an update to {2}.'.format(key, self._cache[key], value))
+            self._update_cache(key, value)
+        else:
+            if DEBUG:
+                print('Key {0} already in cache with the same value {1}.'.format(key, value))
+
+
+    def _put2disk(self, key, value):
+        try:
+            value_from_disk = self.tdb.get_value(key)
+        except KeyError:
+            self.tdb.put(key, value)
+            return
+        if not value_from_disk == value:
+            self.tdb.put(key, value)
 
     def get(self, key):
-        value = self._cache.get(key)
-        if not value:
-            try:
-                value = self.tdb.get_value(key)
-            except KeyError:
-                return False
+        value = self._cache.get(key) or self._get_from_disk(key)
+        return value
+
+    def _get_from_disk(self, key):
+        try:
+            value = self.tdb.get_value(key)
+        except KeyError:
+            return False
         return value
 
     def _update_cache(self, key, value):

@@ -15,7 +15,7 @@ class FetchUrl(threading.Thread):
     def run(self):
         for i in xrange(REQUESTS):
             rr = requests.post('http://localhost:8888/', {'full_url':'http://www.google.com/'})
-            #print("request {0}, status_code {1}".format(i, rr.status_code))
+            print("request {0}, status_code {1}".format(i, rr.status_code))
 
 def bench():
     """ Counts time """
